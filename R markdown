@@ -1,4 +1,63 @@
 ---
+title: "BMEG 310 Assignment 2 Q1"
+author: "Project Group 16"
+date: "2023-10-16"
+output: pdf_document
+---
+```{r}
+
+ovarian.dataset <- read.delim("ovarian.data", sep=",", header = FALSE)
+features <- c("perimeter", "area", "smoothness", "symmetry", "concavity", paste("protein", seq(1, 25), sep=""))
+names(ovarian.dataset) <- c("cell_id", "diagnosis", features) # paste0(features,"_mean"), paste0(features,"_se"), paste0(features,"_worst")
+head(ovarian.dataset)
+
+# Q1. Dimensionality Reduction
+
+# Q1.1.
+
+features_data <- ovarian.dataset[, features]
+scaled_features <- scale(features_data)
+pca_result <- prcomp(scaled_features)
+summary(pca_result)
+
+pc1_variance <- (pca_result$sdev[1]^2 / sum(pca_result$sdev^2)) * 100
+
+cat("42.77% of variation is associated with PC1.")
+
+# Q1.2.
+
+# Calculate cumulative explained variance
+cumulative_variance <- cumsum((pca_result$sdev^2) / sum(pca_result$sdev^2)) * 100
+
+# Find the number of PCs needed to achieve 90% explained variance
+PCs_needed <- which(cumulative_variance >= 90)[1]
+
+cat("9 PCs are needed to achieve 90% representation of the variance.")
+
+# Q1.3.
+
+library(devtools)
+library(ggbiplot)
+
+ggbiplot(pca_result, choices=c(1,2), ellipse = TRUE, groups = ovarian.dataset$diagnosis)
+
+# Q1.4.
+
+library(ggplot2)
+
+ggplot(ovarian.dataset, aes(x = area, y = concavity, color = diagnosis)) + geom_point()
+
+# Q1.5.
+
+cat("The primary difference between the two plots is that the first one is a principle component analysis (PCA) plot of the first two principle components of the dataset. The second plot is a direct comparison between the area and concavity features of the data. The PCA plot gives better separation between the classes as opposed to the area vs. concavity plot. This suggests that the two principal components capture a more significant portion of the variation that is relevant for distinguishing between benign and malignant cells.")
+
+# Q1.6.
+
+boxplot(pca_result$x, main = "Distribution of PCs", scale = TRUE, center = TRUE)
+
+```
+
+---
 title: "Assignment 2 Q2"
 author: "Group 16"
 date: "`r Sys.Date()`"
