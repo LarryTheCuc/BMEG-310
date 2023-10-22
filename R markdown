@@ -57,33 +57,111 @@ boxplot(pca_result$x, main = "Distribution of PCs", scale = TRUE, center = TRUE)
 
 ```
 
----
-title: "Assignment 2 Q2"
-author: "Group 16"
-date: "`r Sys.Date()`"
-output: pdf_document
----
+## Question 1 stuff that will need to be merged for variables
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+```{r Q1, echo=FALSE}
+ovarian.dataset <- read.delim("ovarian.data", sep=",", header = FALSE)
+features <- c("perimeter", "area", "smoothness", "symmetry", "concavity", 
+              paste("protein", seq(1, 25), sep=""))
+names(ovarian.dataset) <- c("cell_id", "diagnosis", features) # paste0(features,"_mean"),
+paste0(features,"_se")
+paste0(features,"_worst")
+
+ovarian.data.norm <- as.data.frame(scale(ovarian.dataset[,3:32]))
+
+ovarian.pca <- prcomp(ovarian.dataset[,3:32], center = TRUE,scale. = TRUE)
 ```
 
-## R Markdown
+## Function used to calcualte accuarcy, precission and recall
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
-
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-```{r cars}
-summary(cars)
+```{r definition}
+CompareKLabels <- function(kLabels, TrueLabels){
+  #test correspondence of labels 1 and 2 to M or B
+  OneAsM <- ifelse(kLabels == 1, "M", kLabels)
+  OneAsM <- ifelse(OneAsM == 2, "B", OneAsM)
+  
+  OneAsB <- ifelse(kLabels == "1", "B", kLabels)
+  OneAsB <- ifelse(OneAsB == 2, "M", OneAsB)
+  
+  SuccessM <- sum(OneAsM == TrueLabels)
+  SuccessB <- sum(OneAsB == TrueLabels)
+  
+  #compare which yields higher accuracy to the labels
+  if (SuccessM > SuccessB){
+    Accuracy <- SuccessM
+    FoundLabels <-  OneAsM
+  } else {
+    Accuracy <- SuccessB
+    FoundLabels <- OneAsB
+  }
+  
+  #return how many matched the real labels
+  percentAcc <-  Accuracy / length(kLabels)
+  
+  tp <- length(which(TrueLabels=="M"))
+  tn <- length(which(TrueLabels=="B"))
+  fp <- length(which(FoundLabels=="M"))
+  fn <- length(which(TrueLabels=="B"))
+  
+  percision <- (tp) / (tp + fp)
+  recall <- (tp) / (tp + fn)
+  
+  values <- data.frame(percentAcc, percision,recall)
+  return(values)
+}
 ```
 
-## Including Plots
 
-You can also embed plots, for example:
+## Question 2.1
 
-```{r pressure, echo=FALSE}
-plot(pressure)
+```{r Q2.1}
+##question 2 kmeans clustering
+library(factoextra)
+
+#create kmeans clusters 
+ovarian.k <- kmeans(ovarian.data.norm, 2, iter.max = 10, nstart=1)
+print(ovarian.k)
+
+#visualize clusters
+fviz_cluster(ovarian.k, ovarian.dataset[,3:32], ellipse.type = "norm")
+
+#making a function that will take both kclusted labels and the true labels and 
+#compare the accuracy
+result1 <- CompareKLabels(ovarian.k$cluster,ovarian.dataset$diagnosis)
+result1
+
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+## Question 2.2
+
+```{r Q2.2}
+#empty vector to store accuracy
+accuracies <- numeric(10)
+
+for(i in 1:10){
+  tempKData <- kmeans(ovarian.data.norm, centers = 2, nstart = 1)
+  valsDF <- CompareKLabels(tempKData$cluster, ovarian.dataset$diagnosis)
+  accuracies[i] <- valsDF[1,1]
+}
+
+meanAcc <- mean(accuracies)
+meanAcc
+
+```
+
+## Question 2.3
+
+```{r Q2.3}
+#empty vector to store accuracies
+topPC <- ovarian.pca$x[,1:5]
+
+topPc_K <- kmeans(topPC,2)
+PcaKvals <-CompareKLabels(topPc_K$cluster, ovarian.dataset$diagnosis)
+PcaKvals
+```
+
+## Question 2.4
+
+Comparing the accuracy, precision and recall of the two methods we see that our first method (kmeans on the data directly) provides a higher accuracy and precision
+
+
