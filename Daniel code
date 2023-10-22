@@ -132,7 +132,7 @@ topPc_K <- kmeans(topPC,2)
 PcaKvals <-CompareKLabels(topPc_K$cluster, ovarian_dataset$diagnosis)
 
 #Q2.4
-#I got the same values lol
+#very similar, very slighlty better on the first one 
 
 
 
