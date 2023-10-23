@@ -152,3 +152,236 @@ Comparing the accuracy, precision and recall of the two methods we see that our 
 
 
 ## Q.3 Classification
+
+```{r}
+ovarian.dataset.train <- ovarian.dataset[sample(nrow(ovarian.dataset))[1:(nrow(ovarian.dataset)/2)],]
+ovarian.dataset.test <- ovarian.dataset[sample(nrow(ovarian.dataset))[(nrow(ovarian.dataset)/2):(nrow(ovarian.dataset))],]
+```
+
+# 3.1
+
+```{r}
+library(ISLR)
+library(caret)
+library(ROCR)
+library(randomForest)
+
+ovarian.dataset.test$diagnosis <- ifelse(ovarian.dataset.test$diagnosis == "B", 1, 0)
+ovarian.dataset.train$diagnosis <- ifelse(ovarian.dataset.train$diagnosis == "B", 1, 0)
+
+# Train set
+
+trained_ovarian_glm <- glm(diagnosis ~ (perimeter:protein25), data = ovarian.dataset.train, family = binomial)
+trained_ovarian_predict <- predict(trained_ovarian_glm,ovarian.dataset.train[,3:32], type = "response")
+glmTrained_ovarian_predict <- ifelse(trained_ovarian_predict > 0.5, "B", "M")
+
+ovarian.dataset.train$diagnosis <- ifelse(ovarian.dataset.train$diagnosis == 1, "B", "M")
+confusion_matrix_train <- table(glmTrained_ovarian_predict, ovarian.dataset.train$diagnosis)
+
+train_accuracy <- mean(glmTrained_ovarian_predict == ovarian.dataset.train$diagnosis)
+train_precision <- confusion_matrix_train[2, 2] / (confusion_matrix_train[2, 2] + confusion_matrix_train[1, 2]) 
+train_recall <- confusion_matrix_train[2, 2] / (confusion_matrix_train[2, 2] + confusion_matrix_train[2, 1])
+
+cat("Train Accuracy:", train_accuracy, "\n")
+cat("Train Precision:", train_precision, "\n")
+cat("Train Recall:", train_recall, "\n")
+
+# Test set
+
+test_ovarian_glm <- predict(trained_ovarian_glm, ovarian.dataset.test[,3:32], type = "response")
+glmTest_ovarian_predict <- ifelse(test_ovarian_glm > 0.5, "B", "M")
+
+ovarian.dataset.test$diagnosis <- ifelse(ovarian.dataset.test$diagnosis == 1, "B", "M")
+confusion_matrix_test <- table(glmTest_ovarian_predict, ovarian.dataset.test$diagnosis)
+
+test_accuracy <- mean(glmTest_ovarian_predict == ovarian.dataset.test$diagnosis)
+
+test_precision <- confusion_matrix_test[2, 2] / (confusion_matrix_test[2, 2] + confusion_matrix_test[1, 2]) 
+
+test_recall <- confusion_matrix_test[2, 2] / (confusion_matrix_test[2, 2] + confusion_matrix_test[2, 1])
+
+cat("Test Accuracy:", test_accuracy, "\n")
+cat("Test Precision:", test_precision, "\n")
+cat("Test Recall:", test_recall, "\n")
+
+```
+
+# 3.2
+
+```{r}
+pca_dataframe <- data.frame(ovarian.dataset$diagnosis)
+pca_data <- cbind(pca_dataframe, as.data.frame(top_5_pcs))
+
+ovarian.pca.train <- pca_data[sample(nrow(pca_data))[1:(nrow(pca_data)/2)],]
+ovarian.pca.test <- pca_data[sample(nrow(pca_data))[(nrow(pca_data)/2):(nrow(pca_data))],]
+
+ovarian.pca.train$ovarian.dataset.diagnosis <- ifelse(ovarian.pca.train$ovarian.dataset.diagnosis == "B", 1, 0)
+ovarian.pca.test$ovarian.dataset.diagnosis <- ifelse(ovarian.pca.test$ovarian.dataset.diagnosis == "B", 1, 0)
+
+# Train set
+
+train_ovarian_pc_glm <- glm(ovarian.dataset.diagnosis ~ (PC1:PC5), data = ovarian.pca.train, family = binomial)
+train_ovarian_pc_predict <- predict(train_ovarian_pc_glm, ovarian.pca.train[,2:6], type = "response")
+glmTrained_ovarian_pc_predict <- ifelse(train_ovarian_pc_predict > 0.5, "B", "M")
+
+ovarian.pca.train$ovarian.dataset.diagnosis <- ifelse(ovarian.pca.train$ovarian.dataset.diagnosis == 1, "B", "M")
+confusion_matrix_pc_train <- table(glmTrained_ovarian_pc_predict, ovarian.pca.train$ovarian.dataset.diagnosis)
+pc_train_accuracy <- sum(diag(confusion_matrix_pc_train)) / sum(confusion_matrix_pc_train)
+
+pc_train_precision <- confusion_matrix_pc_train[2, 2] / (confusion_matrix_pc_train[2, 2] + confusion_matrix_pc_train[1, 2]) 
+
+pc_train_recall <- confusion_matrix_pc_train[2, 2] / (confusion_matrix_pc_train[2, 2] + confusion_matrix_pc_train[2, 1])
+
+cat("Train Accuracy:", pc_train_accuracy, "\n")
+cat("Train Precision:", pc_train_precision, "\n")
+cat("Train Recall:", pc_train_recall, "\n")
+
+# Test set
+
+test_ovarian_pred_pc <- predict(train_ovarian_pc_glm, ovarian.pca.test[,2:6], type = "response")
+glmTest_ovarian_pred_pc <- ifelse(test_ovarian_pred_pc > 0.5, "B", "M")
+
+ovarian.pca.test$ovarian.dataset.diagnosis <- ifelse(ovarian.pca.test$ovarian.dataset.diagnosis == 1, "B", "M")
+confusion_matrix_pc_test  <- table(glmTest_ovarian_pred_pc , ovarian.pca.test$ovarian.dataset.diagnosis)
+
+test_accuracy_pc <- sum(diag(confusion_matrix_pc_test)) / sum(confusion_matrix_pc_test) 
+
+test_precision_pc <- confusion_matrix_pc_test[2, 2] / (confusion_matrix_pc_test[2, 2] + confusion_matrix_pc_test[1, 2])
+
+test_recall_pc <- confusion_matrix_pc_test[2, 2] / (confusion_matrix_pc_test[2, 2] + confusion_matrix_pc_test[2, 1])
+
+cat("Test Accuracy:", test_accuracy_pc, "\n")
+cat("Test Precision:", test_precision_pc, "\n")
+cat("Test Recall:", test_recall_pc, "\n")
+```
+
+# 3.3
+
+```{r}
+cat("The results get worse, due to the decreased sample size, which would mean that not all data is captured")
+```
+
+# 3.4
+
+```{r}
+cat("The clustering method provided better results in our case, as they were around the 92% mark, while for 3.1 the accuracies were closer to 88%.")
+```
+
+# 3.5
+
+```{r}
+predict.probability <- predict(trained_ovarian_glm, ovarian.dataset, type="response")
+predict <- prediction(predict.probability, ovarian.dataset$diagnosis, label.ordering=c("M","B"))
+perform <- performance(predict,"tpr","fpr")
+plot(perform,colorize=TRUE)
+
+predict <- prediction(test_ovarian_glm, ovarian.dataset.test$diagnosis, label.ordering=c("M","B"))
+perform <- performance(predict,"tpr","fpr")
+plot(perform,colorize=TRUE)
+
+predict.probability <- predict(train_ovarian_pc_glm, pca_data, type="response")
+predict <- prediction(predict.probability, pca_data$ovarian.dataset.diagnosis, label.ordering=c("M","B"))
+perform <- performance(predict,"tpr","fpr")
+plot(perform,colorize=TRUE)
+
+cat("The produced ROC curve suggests better model performance as it is closer to the top left corner. This suggests less overlap between the two classes since it strays away from the diagonal line, showing better separability. An ROC curve can provide more information than a single sensitivity/specificity measure since it is able to measure performance across a range of thresholds as opposed to one specific threshold.")
+```
+
+# 3.6
+
+```{r}
+set.seed(123)
+
+ovarian.forest.train <- ovarian.dataset[sample(nrow(ovarian.dataset))[1:(nrow(ovarian.dataset)/2)],]
+ovarian.forest.test <- ovarian.dataset[sample(nrow(ovarian.dataset))[(nrow(ovarian.dataset)/2):(nrow(ovarian.dataset))],]
+
+ovarian.forest.train$diagnosis <- ifelse(ovarian.forest.train$diagnosis == "B", 1, 0)
+ovarian.forest.test$diagnosis <- ifelse(ovarian.forest.test$diagnosis == "B", 1, 0)
+
+# train set 
+
+train_model  <- randomForest(diagnosis ~ ., ovarian.forest.train)
+train_pred <- predict(train_model, newdata = ovarian.forest.train)
+
+train_forest_ovarian_pred <- ifelse(train_pred > 0.5, "B", "M")
+ovarian.forest.train$diagnosis <- ifelse(ovarian.forest.train$diagnosis == 1, "B", "M")
+trained_forest_confusion_matrix <- table(train_forest_ovarian_pred, ovarian.forest.train$diagnosis)
+
+train_forest_accuracy <- mean(train_forest_ovarian_pred == ovarian.forest.train$diagnosis)
+
+train_forest_precision <- trained_forest_confusion_matrix[2, 2] / (trained_forest_confusion_matrix[2, 2] + trained_forest_confusion_matrix[1, 2]) 
+
+train_forest_recall <- trained_forest_confusion_matrix[2, 2] / (trained_forest_confusion_matrix[2, 2] + trained_forest_confusion_matrix[2, 1]) 
+
+cat("Train Accuracy:", train_forest_accuracy, "\n")
+cat("Train Precision:", train_forest_precision, "\n")
+cat("Train Recall:", train_forest_recall, "\n")
+
+test_prediction <- predict(train_model, newdata = ovarian.forest.test)
+
+test_forest_ovarian_pred <- ifelse(test_prediction > 0.5, "B", "M")
+ovarian.forest.test$diagnosis <- ifelse(ovarian.forest.test$diagnosis == 1, "B", "M")
+test_forest_confusion_matrix <- table(test_forest_ovarian_pred, ovarian.forest.test$diagnosis)
+
+test_forest_accuracy <- mean(test_forest_ovarian_pred == ovarian.forest.test$diagnosis)
+
+test_forest_precision <- test_forest_confusion_matrix[2, 2] / (test_forest_confusion_matrix[2, 2] + test_forest_confusion_matrix[1, 2])
+
+test_forest_recall <- test_forest_confusion_matrix[2, 2] / (test_forest_confusion_matrix[2, 2] + test_forest_confusion_matrix[2, 1])
+
+cat("Test Accuracy:", test_forest_accuracy, "\n")
+cat("Test Precision:", test_forest_precision, "\n")
+cat("Test Recall:", test_forest_recall, "\n")
+
+forest_pca <- data.frame(ovarian.dataset$diagnosis)
+forest_pca_data <- cbind(forest_pca, as.data.frame(top_5_pcs))
+
+ovarian.pca.train.forest <- forest_pca_data[sample(nrow(forest_pca_data))[1:(nrow(forest_pca_data)/2)],]
+ovarian.pca.test.forest <- forest_pca_data[sample(nrow(forest_pca_data))[(nrow(forest_pca_data)/2):(nrow(forest_pca_data))],]
+ovarian.pca.train.forest$ovarian.dataset.diagnosis <- ifelse(ovarian.pca.train$ovarian.dataset.diagnosis == "B", 1, 0)
+ovarian.pca.test.forest$ovarian.dataset.diagnosis <- ifelse(ovarian.pca.test$ovarian.dataset.diagnosis == "B", 1, 0)
+
+train_model_pca  <- randomForest(ovarian.dataset.diagnosis ~ (PC1:PC5), ovarian.pca.train.forest)
+train_pred_pca <- predict(train_model_pca, newdata = ovarian.pca.train.forest)
+train_forest_ovarian_pred_pca <- ifelse(train_pred_pca > 0.5, "B", "M")
+
+ovarian.pca.train.forest$ovarian.dataset.diagnosis <- ifelse(ovarian.pca.train.forest$ovarian.dataset.diagnosis == 1, "B", "M")
+
+trained_forest_confusion_matrix_pca <- table(train_forest_ovarian_pred_pca, ovarian.pca.train.forest$ovarian.dataset.diagnosis)
+
+train_forest_accuracy_pca <- mean(train_forest_ovarian_pred_pca == ovarian.pca.train.forest$ovarian.dataset.diagnosis)
+
+train_forest_precision_pca <- trained_forest_confusion_matrix_pca[2, 2] / (trained_forest_confusion_matrix_pca[2, 2] + trained_forest_confusion_matrix_pca[1, 2])
+
+train_forest_recall_pca <- trained_forest_confusion_matrix_pca[2, 2] / (trained_forest_confusion_matrix_pca[2, 2] + trained_forest_confusion_matrix_pca[2, 1])
+
+cat("Train Accuracy:", train_forest_accuracy_pca, "\n")
+cat("Train Precision:", train_forest_precision_pca, "\n")
+cat("Train Recall:", train_forest_recall_pca, "\n")
+
+test_prediction_pca <- predict(train_model_pca, newdata = ovarian.pca.test.forest)
+test_forest_ovarian_pred_pca <- ifelse(test_prediction_pca > 0.5, "B", "M")
+ovarian.pca.test.forest$ovarian.dataset.diagnosis <- ifelse(ovarian.pca.test.forest$ovarian.dataset.diagnosis == 1, "B", "M")
+
+confusion_matrix_test_forest_pca <- table(test_forest_ovarian_pred_pca, ovarian.pca.test.forest$ovarian.dataset.diagnosis)
+
+test_forest_accuracy_pca <- mean(test_forest_ovarian_pred_pca == ovarian.pca.test.forest$ovarian.dataset.diagnosis)
+
+test_forest_precision_pca <- confusion_matrix_test_forest_pca[2, 2] / (confusion_matrix_test_forest_pca[2, 2] + confusion_matrix_test_forest_pca[1, 2])
+
+test_forest_recall_pca <- confusion_matrix_test_forest_pca[2, 2] / (confusion_matrix_test_forest_pca[2, 2] + confusion_matrix_test_forest_pca[2, 1])
+
+cat("Test Accuracy:", test_forest_accuracy_pca, "\n")
+cat("Test Precision:", test_forest_precision_pca, "\n")
+cat("Test Recall:", test_forest_recall_pca, "\n")
+
+predict.probability1 <- predict(train_model, ovarian.dataset, type="response")
+predict1 <- prediction(predict.probability1, ovarian.dataset$diagnosis, label.ordering=c("M","B"))
+perform1 <- performance(predict1,"tpr","fpr")
+plot(perform1,colorize=TRUE)
+
+predict.probability2 <- predict(train_model_pca, forest_pca_data, type="response")
+predict2 <- prediction(predict.probability2, pca_data$ovarian.dataset.diagnosis, label.ordering=c("M","B"))
+perform2 <- performance(predict2,"tpr","fpr")
+plot(perform2,colorize=TRUE)
+```
