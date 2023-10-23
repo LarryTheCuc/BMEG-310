@@ -56,21 +56,7 @@ cat("The primary difference between the two plots is that the first one is a pri
 boxplot(pca_result$x, main = "Distribution of PCs", scale = TRUE, center = TRUE)
 
 ```
-
-## Question 1 stuff that will need to be merged for variables
-
-```{r Q1, echo=FALSE}
-ovarian.dataset <- read.delim("ovarian.data", sep=",", header = FALSE)
-features <- c("perimeter", "area", "smoothness", "symmetry", "concavity", 
-              paste("protein", seq(1, 25), sep=""))
-names(ovarian.dataset) <- c("cell_id", "diagnosis", features) # paste0(features,"_mean"),
-paste0(features,"_se")
-paste0(features,"_worst")
-
-ovarian.data.norm <- as.data.frame(scale(ovarian.dataset[,3:32]))
-
-ovarian.pca <- prcomp(ovarian.dataset[,3:32], center = TRUE,scale. = TRUE)
-```
+## Q2. Clustering 
 
 ## Function used to calcualte accuarcy, precission and recall
 
@@ -119,7 +105,7 @@ CompareKLabels <- function(kLabels, TrueLabels){
 library(factoextra)
 
 #create kmeans clusters 
-ovarian.k <- kmeans(ovarian.data.norm, 2, iter.max = 10, nstart=1)
+ovarian.k <- kmeans(scaled_features, 2, iter.max = 10, nstart=1)
 print(ovarian.k)
 
 #visualize clusters
@@ -139,7 +125,7 @@ result1
 accuracies <- numeric(10)
 
 for(i in 1:10){
-  tempKData <- kmeans(ovarian.data.norm, centers = 2, nstart = 1)
+  tempKData <- kmeans(scaled_features, centers = 2, nstart = 1)
   valsDF <- CompareKLabels(tempKData$cluster, ovarian.dataset$diagnosis)
   accuracies[i] <- valsDF[1,1]
 }
@@ -153,7 +139,7 @@ meanAcc
 
 ```{r Q2.3}
 #empty vector to store accuracies
-topPC <- ovarian.pca$x[,1:5]
+topPC <- pca_result$x[,1:5]
 
 topPc_K <- kmeans(topPC,2)
 PcaKvals <-CompareKLabels(topPc_K$cluster, ovarian.dataset$diagnosis)
@@ -165,3 +151,4 @@ PcaKvals
 Comparing the accuracy, precision and recall of the two methods we see that our first method (kmeans on the data directly) provides a higher accuracy and precision
 
 
+## Q.3 Classification
