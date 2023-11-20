@@ -1,1 +1,267 @@
+---
+title: "Assignment 3"
+author: "Alexandra Murphy (38204632)"
+date: "2023-11-15"
+output: pdf_document
+---
 
+# Question 1
+
+Areas of the genome with high GC content are harder to sequence because of their higher stability due to base stacking or the formation of stronger hydrogen bonds. These regions also have a higher melting points and form secondary structures, which further impedes the progression of DNA polymerase during PCR.
+
+# Question 2
+
+```{r Q2., out.width="75%"}
+
+knitr::include_graphics("GlobalAlignment.png")
+
+```
+
+# Question 3
+
+```{r Q3., results = 'hide'}
+
+# Q3.1.
+
+read.csv("single_cell_RNA_seq_bam.sam", nrows=73, sep="\t", header=FALSE, fill=TRUE)
+
+# The SN tag indicates the reference sequence name and the LN tag indicates the 
+# reference sequence length.
+  
+# Q3.2.
+
+data <- read.csv("single_cell_RNA_seq_bam.sam", sep="\t", header=FALSE, fill=TRUE)
+X.length <- data$V3[data$V2 == "SN:X"]
+
+# The length of the X chromosome is 171031299 bp.
+
+```
+
+# Question 4
+
+```{r Q4.}
+
+# Q4.1.
+
+sam <- read.csv("single_cell_RNA_seq_bam.sam", sep="\t", header=FALSE, comment.char="@",
+                col.names = paste0("V",seq_len(30)), fill=TRUE)
+sam <- sam[paste0("V",seq_len(11))]
+
+num_reads <- nrow(sam)
+
+# There are 146346 reads.
+
+# Q4.2.
+
+tenth_row <- sam[10, ]
+print(tenth_row)
+
+# You should look at column 3 (V3) to find the chromosome to which the read was aligned.
+# V11 corresponds to the data field QUAL which is the ASCII of Phred-scaled base QUALity+33.
+
+# Q4.3.
+
+num_X <- sum(sam$V3 == "X")
+
+# There are 5999 reads that align to chromosome X.
+
+# Q4.4.
+
+quality_strings <- sam[sam$V3 == "X", "V11"]
+
+# Function to convert ASCII values to Phred-scaled quality scores
+
+convert_to_quality <- function(string) {
+  ascii_values <- utf8ToInt(string)
+  quality_scores <- ascii_values - 33
+  return(quality_scores)
+}
+
+bq_values <- sapply(quality_strings, convert_to_quality)
+mean_bq <- mean(bq_values)
+
+# The mean base quality is 32.72.
+
+# Q4.5.
+
+bq_total <- lapply(sam[ , "V11"], convert_to_quality)
+
+# Function to collect elements at a specific position into a new list
+
+collect_elements <- function(list, position) {
+  elements <- sapply(list, `[`, position)
+  result <- as.list(elements)
+  return(result)
+}
+
+# Create an empty list to store results
+
+result_list <- vector("list", length = 58)
+
+# Loop through each position
+
+for (i in 1:58) {
+  result_list[[i]] <- collect_elements(bq_total, position = i)
+}
+
+# Aggregate data (calculate median) for each position
+
+aggregated_data <- lapply(result_list, function(x) median(as.numeric(unlist(x), na.rm = TRUE)))
+
+# Create boxplot for the aggregated data
+
+boxplot(aggregated_data)
+
+# Q4.6.
+
+# Column 4 contains the leftmost mapping position.
+
+# Q4.7.
+
+num_reads <- sum(sam$V3 == "9" & sam$V4 >= 40801273 & sam$V4 <= 40805199)
+
+# 119 reads have their leftmost mapping position aligned with these coordinates.
+
+# Q4.8.
+
+num_qual <- sum(sam$V5 < 50)
+
+# 61527 reads have mapping quality less than 50.
+
+# Q4.9.
+
+map_qual <- sam[sam$V5 < 50, ]
+mean_map_qual <- mean(map_qual$V5)
+
+# The mean mapping quality is 0.2418.
+
+```
+
+# Question 5
+
+```{r Q5., results = 'hide'}
+
+# Q5.1.
+
+vcf_con <- file("RNA_seq_annotated_variants.vcf", open="r")
+vcf_file <- readLines(vcf_con)
+close(vcf_con)
+vcf <- data.frame(vcf_file)
+header <- vcf[grepl("##", vcf$vcf_file), ]
+factor(header)
+variants <- read.csv("RNA_seq_annotated_variants.vcf", skip=length(header), header=TRUE, sep="\t")
+
+# Reference allele: G, alternative allele: A.
+
+# Q5.2.
+
+ann_contents <- sub(".*ANN=", "", variants[1, "INFO"])
+
+# ANN contents: A|intron_variant|MODIFIER|Sulf1|ENSMUSG00000016918|transcript|
+# ENSMUST00000088585.9|protein_coding|2/21|c.-133+17418G>A||||||,A|intron_variant|
+# MODIFIER|Sulf1|ENSMUSG00000016918|transcript|ENSMUST00000177608.7|protein_coding|2/21|
+# c.-133+17418G>A||||||,A|intron_variant|MODIFIER|Sulf1|ENSMUSG00000016918|transcript|
+# ENSMUST00000180062.7|protein_coding|1/20|c.-132-39973G>A||||||,A|intron_variant|MODIFIER|
+# Sulf1|ENSMUSG00000016918|transcript|ENSMUST00000186051.6|protein_coding|2/21|
+# c.-133+17418G>A||||||,A|intron_variant|MODIFIER|Sulf1|ENSMUSG00000016918|transcript|
+# ENSMUST00000187376.6|retained_intron|2/11|n.420+17418G>A||||||,A|intron_variant|MODIFIER|
+# Sulf1|ENSMUSG00000016918|transcript|ENSMUST00000186405.6|protein_coding|1/2|
+# c.-133+17418G>A||||||WARNING_TRANSCRIPT_INCOMPLETE,A|intron_variant|MODIFIER|Sulf1|
+# ENSMUSG00000016918|transcript|ENSMUST00000189541.6|protein_coding|2/3|
+# c.-133+17418G>A||||||WARNING_TRANSCRIPT_INCOMPLETE"
+
+# Q5.3.
+
+ann_info <- (sub(".*##INFO=<ID=ANN", "", vcf[108, ]))
+
+# The annotation field for this variant tells us that it is an intron variant.
+
+# Q5.4.
+
+var_683 <- (variants[683, ])
+
+# Reference allele: ACAGGGG, alternative allele: A.
+
+ann_var_contents <- sub(".*ANN=", "", variants[683, "INFO"])
+
+# This variant would affect the gene Rps19.
+
+# Q5.5.
+
+high_impact <- variants[grepl("HIGH", variants$INFO), ]
+num_high_impact <- nrow(high_impact)
+
+# There are 4 high impact variants.
+
+# Q5.6.
+
+# A frameshift variant occurs when the addition or deletion of nucleotides in a DNA sequence
+# disrupts the normal reading frame during translation, shifting the way the sequence is
+# read. A frameshift variant often has a greater effect than a missense variant on the
+# resultant protein because frameshift mutations can lead to a change in the entire amino
+# acid sequence downstream of the mutation resulting in different sets of codons and
+# premature stop codons.
+
+# Q5.7.
+
+intronic_variants <- variants[grepl("intron_variant", variants$INFO), ]
+intergenic_variants <- variants[grepl("intergenic_region", variants$INFO), ]
+count_intronic_variants <- nrow(intronic_variants) + nrow(intergenic_variants)
+
+# There are 606 intronic variants. Compared to the 836 total variants, a large percentage of
+# variants seem to be intronic.
+
+# Q5.8.
+
+# View high_impact data frame and ensure that "protein_coding" is mentioned. The genes that
+# have been affected by coding mutations and have high impact are: Ddx1, Rps14, Rps19, and
+# Hnrnpl. It is interesting that there are so few genes that have high impact.
+
+# Q5.9.
+
+# Read lengths of only 60 bp could have consequences for the detection of longer insertions
+# because the longer insertions will not be fully covered and may lead to fragmented
+# information, alignment challenges, and ambiguity in variant calling.
+
+# Q5.10.
+
+# Function to calculate VAF
+
+calculate_vaf <- function(sample) {
+  
+  values <- unlist(strsplit(sample, ":"))
+  alleles <- values[6]
+  alleles <- unlist(strsplit(alleles, ","))
+  
+  vaf <- as.numeric(alleles[2]) / sum(as.numeric(alleles))
+  
+  return(vaf)
+}
+
+# Create an empty vector to store VAF values
+
+vaf_vector <- numeric(length = 836)
+
+# Calculate VAF for each sample and store in the vector
+
+for (i in 1:836) {
+  vaf_vector[i] <- calculate_vaf(variants$ws20171223_MPs_tomatoMuscle8wkQuiescent201[i])
+}
+
+# Create a boxplot of VAF distribution
+
+boxplot(vaf_vector, main = "Variant Allele Frequency Distribution", ylab = "VAF")
+
+# Count variants with VAF > 5%
+
+variants_above_5_percent <- sum(vaf_vector > 0.05, na.rm = TRUE)
+
+# There are 816 variants with a VAF above 5%.
+
+variants$VAF <- vaf_vector
+
+VAF_coding_variants <- variants[variants$VAF > 0.05 & grepl("protein_coding", variants$INFO), ]
+
+# There are 689 variants in coding regions and with a VAF above 5%.
+
+```
