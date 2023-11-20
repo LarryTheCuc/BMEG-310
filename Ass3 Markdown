@@ -1,6 +1,6 @@
 ---
 title: "Assignment 3"
-author: "Group 16?"
+author: "Group 16: Alexandra Murphy, Daniel Hinatsu, SJ Patel"
 date: "`r Sys.Date()`"
 output: pdf_document
 ---
@@ -11,7 +11,9 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Question 1
 
-[Alex]
+Areas of the genome with high GC content are harder to sequence because of their higher stability due to
+base stacking or the formation of stronger hydrogen bonds. These regions also have a higher melting points
+and form secondary structures, which further impedes the progression of DNA polymerase during PCR.
 
 ## Question 2
 
