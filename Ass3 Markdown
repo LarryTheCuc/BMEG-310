@@ -77,30 +77,19 @@ mean(BadMap$V5)
 #0.24181254
 
 #4.10
-
+[SJ]
 ```
 
 ## Question 5
 
 ```{r}
 #q5.1
-vcf_con <- file("RNA_seq_annotated_variants.vcf", open="r")
-vcf_file <- readLines(vcf_con)
-close(vcf_con)
-vcf <- data.frame(vcf_file)
-header <- vcf[grepl("##", vcf$vcf_file), ]
-factor(header)
-variants <- read.csv("RNA_seq_annotated_variants.vcf", skip=length(header),
-                     header=TRUE, sep="\t")
-#reference genome is column 4; REF. The alternative allele is column 5; ALT 
-var1ref <- variants$REF[1]
-var1ref
-var1alt <- variants$ALT[1]
-var1alt
+
+[alex]
 
 #q5.2
-var1Info <- strsplit(as.character(variants$INFO[1]), ";")[[1]]
-var1ANN <- var1Info[grep("ANN=", var1Info)]
+
+[any]
 
 #q5.3
 
@@ -159,3 +148,17 @@ boxplot(VAF, main = "VAF")
 sum(VAF > 0.05)
 sum(VAF >0.05 & grepl("protein_coding", variants$INFO))
 ```
+
+Contributions:
+Collabrative:
+
+Alex:
+1 
+Daniel: 
+2,
+3,
+4.1,4.2,4.3,4.6,4.7,4.8,4.9
+5.10
+SJ:
+4.4,4.5,4.10
+
