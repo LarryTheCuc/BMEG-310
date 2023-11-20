@@ -69,7 +69,7 @@ nrow(Hspa8)
 
 #q4.8
 BadMap <- subset(sam, V5 < 50)
-dim(BadMap)
+nrow(BadMap)
 #61527
 
 #q4.9
