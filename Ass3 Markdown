@@ -203,11 +203,52 @@ num_high_impact <- nrow(high_impact)
 
 #q.5.7
 
-[Sj or Alex]
+num_variants <- nrow(variants)
+num_intronic <- 0
+
+intronic_tags <- c("intron", "intergenic")
+
+for (i in 1:nrow(variants)) {
+  var_info <- as.character(variants$INFO[i])
+  
+  if (any(sapply(intronic_tags, grepl, var_info))) {
+    num_intronic <- num_intronic + 1
+  }
+}
+
+cat("Total number of variants: ", num_variants, "\n")
+cat("Number of intronic variants: ", num_intronic)
+cat("There are 686 intronic/intergenic variants, which is a majority of the total number of variants. This tells us that most of the variants in the dataset are intronic/intergenic.")
 
 #q5.8
 
-[SJ or Daniel code]
+list_genes <- c()
+
+gene_tags <- c("HIGH", "MODERATE")
+
+for (i in 1:nrow(variants)) {
+  var_info <- as.character(variants$INFO[i])
+  
+  split_info <- strsplit(var_info, ";")[[1]]
+
+  ann <- split_info[grep("^ANN=", split_info)]
+
+  ann_vals <- gsub("ANN=", "", ann)
+  ann_val <- unlist(strsplit(ann_vals, ","))[1]
+  
+  if (any(sapply(gene_tags, grepl, ann_val))) {
+    
+    gene_name <- unlist(strsplit(ann_val, "\\|"))[4]
+    
+    if(!(gene_name %in% list_genes)) {
+      list_genes <- c(list_genes, gene_name)
+    }
+  
+  }
+}
+
+print(list_genes)
+
 
 #q5.9
 
