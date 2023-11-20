@@ -75,6 +75,9 @@ nrow(BadMap)
 #q4.9
 mean(BadMap$V5)
 #0.24181254
+
+#4.10
+
 ```
 
 ## Question 5
