@@ -45,10 +45,8 @@ X.length <- data$V3[data$V2 == "SN:X"]
 
 ## Question 4
 
+# 4.1
 ```{r}
-
-#q4.1
-
 sam <- read.csv("single_cell_RNA_seq_bam.sam",
                 sep="\t", header=FALSE,
 comment.char="@", col.names = paste0("V",seq_len(30)), fill=TRUE)
@@ -56,54 +54,87 @@ sam <- sam[paste0("V",seq_len(11))]
 nrow(sam)
 
 # There are 146346 reads.
+```
 
-#q4.2
-
+# 4.2
+```{r}
 row_10 <- sam[10,]
 # You should look at column 3 (V3) to find the chromosome to which the read was aligned.
 # V11 corresponds to the data field QUAL which is the ASCII of Phred-scaled base QUALity+33.
+```
 
-#q4.3
+# 4.3
+```{r}
+x_reads <- sam[sam$V3 == "X", ]
+x_readcount <- nrow(x_reads)
+cat(x_readcount, "reads align to chromosome X.")
+```
 
-X <-  subset(sam, V3 == "X")
-nrow(X)
+# 4.4
+```{r}
+ascii_mean_phred <- function(qual_string){
+  score <- utf8ToInt(qual_string) - 33
 
-# 5999 reads are from chromosome X
+  return(mean(score, na.rm = TRUE))
+}
 
+ base_quality <- sapply(x_reads$V11, ascii_phred)
+ mean_base_quality <- mean(base_quality, na.rm = TRUE)
+ 
+ cat("The mean base quality is", mean_base_quality)
+```
 
-#q4.4
+# 4.5
+```{r}
+library(ggplot2)
 
-[SJ]
+ascii_phred <- function(qual_string){
+  score <- utf8ToInt(qual_string) - 33
+  return(score)
+}
 
-#q4.5
+scores <- lapply(sam$V11, ascii_phred)
+score_mat <- do.call("cbind", scores)
 
-[SJ code here]
+boxplot(t(score_mat), main = "BQ Distribution")
+```
 
-#q4.6
+# 4.6
+```{r}
+cat("Column 4 contains the leftmost mapping of the reads.")
+```
 
-# Column V4 is the leftmost mapping position
-  
-#q4.7
+# 4.7
+```{r}
+chromo_9 <- sam$V4[sam[,3] == '9']
+total_reads <- length(chromo_9[chromo_9 > 40801273 & chromo_9 < 40805199])
 
-num_reads <- sum(sam$V3 == "9" & sam$V4 >= 40801273 & sam$V4 <= 40805199)
+cat(total_reads, "have their leftmost mapping position aligned within these coordinates.")
+```
 
-# 119 reads have their leftmost mapping position aligned with these coordinates.
+# 4.8
+```{r}
+reads_under_50 <- sum(sam$V5 < 50)
 
-#q4.8
+cat(reads_under_50, "reads have mapping qualities under 50")
+```
 
-BadMap <- subset(sam, V5 < 50)
-nrow(BadMap)
+# 4.9
+```{r}
+mapping_qual <- sam[which(sam[,5]< 50),]
+mean_mapping_qual <- mean(mapping_qual$V5)
 
-# 61527 reads have mapping quality less than 50.
+cat("The mean mapping quality of the reads which have mapping quality less than 50 is", mean_mapping_qual)
+```
 
-#q4.9
+# 4.10
+```{r}
+tdtomato_reads <- sam[which(sam$V3 == 'tdTomato'), ]
+total_tdtomato <- nrow(tdtomato_reads)
 
-mean(BadMap$V5)
+cat(total_tdtomato, "reads align to the tdTomato sequence.")
 
-# 0.24181254
-
-#4.10
-[SJ]
+cat("As 63 reads have the fluorescence protein, we can expect the cell to emit fluorescence. Modifying a genome to include a fluorophore can be used to tell if an inserted DNA sequence is successfully being integrated, and is transcribed and translated into proteins.")
 ```
 
 ## Question 5
