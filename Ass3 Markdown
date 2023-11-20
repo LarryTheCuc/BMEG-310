@@ -27,14 +27,14 @@ and form secondary structures, which further impedes the progression of DNA poly
 
 ```{r Q3., results = 'hide'}
 
-# Q3.1.
+#q3.1
 
 read.csv("single_cell_RNA_seq_bam.sam", nrows=73, sep="\t", header=FALSE, fill=TRUE)
 
 # The SN tag indicates the reference sequence name and the LN tag indicates the 
 # reference sequence length.
   
-# Q3.2.
+#q3.2
 
 data <- read.csv("single_cell_RNA_seq_bam.sam", sep="\t", header=FALSE, fill=TRUE)
 X.length <- data$V3[data$V2 == "SN:X"]
@@ -102,38 +102,61 @@ mean(BadMap$V5)
 
 ## Question 5
 
-```{r}
+```{r, results = 'hide'}
 #q5.1
 
-[alex]
+vcf_con <- file("RNA_seq_annotated_variants.vcf", open="r")
+vcf_file <- readLines(vcf_con)
+close(vcf_con)
+vcf <- data.frame(vcf_file)
+header <- vcf[grepl("##", vcf$vcf_file), ]
+factor(header)
+variants <- read.csv("RNA_seq_annotated_variants.vcf", skip=length(header), header=TRUE, sep="\t")
+
+# Reference allele: G, alternative allele: A.
 
 #q5.2
 
-[any]
+ann_contents <- sub(".*ANN=", "", variants[1, "INFO"])
+
+# ANN contents: A|intron_variant|MODIFIER|Sulf1|ENSMUSG00000016918|transcript|
+# ENSMUST00000088585.9|protein_coding|2/21|c.-133+17418G>A||||||,A|intron_variant|
+# MODIFIER|Sulf1|ENSMUSG00000016918|transcript|ENSMUST00000177608.7|protein_coding|2/21|
+# c.-133+17418G>A||||||,A|intron_variant|MODIFIER|Sulf1|ENSMUSG00000016918|transcript|
+# ENSMUST00000180062.7|protein_coding|1/20|c.-132-39973G>A||||||,A|intron_variant|MODIFIER|
+# Sulf1|ENSMUSG00000016918|transcript|ENSMUST00000186051.6|protein_coding|2/21|
+# c.-133+17418G>A||||||,A|intron_variant|MODIFIER|Sulf1|ENSMUSG00000016918|transcript|
+# ENSMUST00000187376.6|retained_intron|2/11|n.420+17418G>A||||||,A|intron_variant|MODIFIER|
+# Sulf1|ENSMUSG00000016918|transcript|ENSMUST00000186405.6|protein_coding|1/2|
+# c.-133+17418G>A||||||WARNING_TRANSCRIPT_INCOMPLETE,A|intron_variant|MODIFIER|Sulf1|
+# ENSMUSG00000016918|transcript|ENSMUST00000189541.6|protein_coding|2/3|
+# c.-133+17418G>A||||||WARNING_TRANSCRIPT_INCOMPLETE"
 
 #q5.3
 
-[anyone]
+ann_info <- (sub(".*##INFO=<ID=ANN", "", vcf[108, ]))
+
+# The annotation field for this variant tells us that it is an intron variant.
 
 #q5.4
 
-var683ref <- variants$REF[683]
-var683alt <- variants$ALT[683]
-var683Info <- strsplit(as.character(variants$INFO[683]), ";")[[1]]
-var683ANN <- var683Info[grep("ANN=", var683Info)]
-var683ANN
+var_683 <- (variants[683, ])
 
-var683annotes <- strsplit(var683ANN, ",")[[1]]
-var683annotes <- gsub("ANN=", "", var683annotes)
-unlist(var683annotes[1])
-#affects gene Rps19
+# Reference allele: ACAGGGG, alternative allele: A.
+
+ann_var_contents <- sub(".*ANN=", "", variants[683, "INFO"])
+
+# This variant would affect the gene Rps19.
 
 #q5.5
-HIGHvar <- variants[grep("HIGH", variants$INFO), ]
-nrow(HIGHvar)
-#4 rows
+
+high_impact <- variants[grepl("HIGH", variants$INFO), ]
+num_high_impact <- nrow(high_impact)
+
+# There are 4 high impact variants.
 
 #q5.6
+
 #frameshifts occur from a deletion or insertion that changes the reading frame 
 #typically causing a premature stop. In comparison a missense is just a single 
 #amino acid being changed. Frame shifts have a larger influence on the protein as 
@@ -150,9 +173,12 @@ nrow(HIGHvar)
 
 #q5.9
 
-[alex words here]
+# Read lengths of only 60 bp could have consequences for the detection of longer insertions
+# because the longer insertions will not be fully covered and may lead to fragmented
+# information, alignment challenges, and ambiguity in variant calling.
 
 #q5.10
+
 sampleFormat <- strsplit(variants$FORMAT, ":",fixed=TRUE)
 sampleGeno <- strsplit(variants$ws20171223_MPs_tomatoMuscle8wkQuiescent201, ":",fixed=TRUE) 
 
@@ -167,17 +193,18 @@ for (i in 1:length(sampleGeno)) {
 boxplot(VAF, main = "VAF")
 sum(VAF > 0.05)
 sum(VAF >0.05 & grepl("protein_coding", variants$INFO))
+
 ```
 
 Contributions:
-Collabrative:
 
+Collaborative:
+All members initially completed the entire assignment individually before compiling answers to create one single document.
+Finalized document included the following individual parts:
 Alex:
-1,3,5.1,5.2,5.3
+1, 3, 5.1, 5.2, 5.3, 5.4, 5.5, 5.9
 Daniel: 
-2,
-4.1,4.2,4.3,4.6,4.7,4.8,4.9
-5.10
+2, 4.1, 4.2, 4.3, 4.6, 4.7, 4.8, 4.9, 5.6, 5.10
 SJ:
-4.4,4.5,4.10
+4.4, 4.5, 4.10
 
