@@ -1,1 +1,286 @@
+---
+title: "BMEG310_Assignment3"
+author: "SJ"
+date: "2023-11-15"
+output:
+  word_document: default
+  pdf_document: default
+---
 
+# Question 1
+```{r}
+cat("DNA with high GC content can be difficult to sequence because the stable hydrogen bonding between C and G nucleotides require a larger amount of energy to denature when sequencing. GC pairs are held together by 3 hydrogen bonds, whereas AT base pairs only have 2 bonds, and as a result denaturing a double stranded DNA molecule into a single strand for sequencing becomes more difficult. This may lead to inaccuracies in the sequenced results.")
+```
+
+# Question 2
+```{r}
+# Insert photo of work
+```
+
+# Question 3
+
+# 3.1
+```{r}
+read.csv("single_cell_RNA_seq_bam.sam", nrows=73, sep="\t", header=FALSE,
+fill=TRUE)
+
+cat("The SN tag generally specifies the reference sequence or chromosome sequence name, representing which reference sequence each alignment was aligned to. ...")
+```
+
+# 3.2
+```{r}
+bam_file <- read.table("single_cell_RNA_seq_bam.sam", nrows = 73, sep = "\t", header = FALSE, fill = TRUE)
+
+chromo_x <- bam_file[bam_file$V2 == "SN:X", ]
+chromo_x_length <- substring(chromo_x$V3, first = 4)
+
+cat("The length is", chromo_x_length, "bp")
+```
+
+# Question 4
+
+# 4.1
+```{r}
+sam <- read.csv("single_cell_RNA_seq_bam.sam", sep="\t", header=FALSE,
+comment.char="@", col.names = paste0("V",seq_len(30)), fill=TRUE)
+sam <- sam[paste0("V",seq_len(11))]
+
+num_reads <- nrow(sam)
+
+cat("This BAM file has", num_reads, "reads.")
+```
+
+# 4.2
+```{r}
+row_ten <- sam[10,]
+print(row_ten)
+
+cat("The third column (RNAME) represents the chromosome that the read was aligned to. Column V11 represents QUAL, which is the quality of the read alignment, as an ASCII character corresponding to the Phred-scaled base quality.")
+```
+
+# 4.3
+```{r}
+x_reads <- sam[sam$V3 == "X", ]
+x_readcount <- nrow(x_reads)
+cat(x_readcount)
+```
+
+# 4.4
+```{r}
+ascii_mean_phred <- function(qual_string){
+  score <- utf8ToInt(qual_string) - 33
+
+  return(mean(score, na.rm = TRUE))
+}
+
+ base_quality <- sapply(x_reads$V11, ascii_phred)
+ 
+ mean_base_quality <- mean(base_quality, na.rm = TRUE)
+ 
+ cat(mean_base_quality)
+```
+
+# 4.5
+```{r}
+ascii_phred <- function(qual_string){
+  score <- utf8ToInt(qual_string) - 33
+  
+  return(score)
+}
+
+scores <- sapply(sam$V11, ascii_phred)
+all_scores <- unlist(scores)
+
+boxplot(all_scores, main = "BQ Distribution", ylab = "Phred Score")
+```
+
+# 4.6
+```{r}
+
+```
+
+# 4.7
+```{r}
+
+
+```
+
+
+# Question 5
+```{r}
+vcf_con <- file("RNA_seq_annotated_variants.vcf", open="r")
+vcf_file <- readLines(vcf_con)
+close(vcf_con)
+vcf <- data.frame(vcf_file)
+header <- vcf[grepl("##", vcf$vcf_file), ]
+factor(header)
+variants <- read.csv("RNA_seq_annotated_variants.vcf", skip=length(header), header=TRUE, sep="\t")
+```
+
+# 5.1
+```{r}
+ref_allele <- variants$REF[1]
+alt_allele <- variants$ALT[1]
+
+cat("Reference Allele: ", ref_allele, "\n")
+cat("Alternative Allele: ", alt_allele, "\n")
+```
+
+# 5.2
+```{r}
+first_var_info <- as.character(variants$INFO[1])
+
+first_split_info <- strsplit(first_var_info, ";")[[1]]
+
+first_ann <- first_split_info[grep("^ANN=", first_split_info)]
+
+first_ann_vals <- gsub("ANN=", "", first_ann)
+cat(first_ann_vals)
+```
+
+# 5.3
+```{r}
+# Get format for annotation entry
+ann_header <- header[grep("^##INFO=<ID=ANN,", header)]
+
+ann_header_vals <- unlist(strsplit(ann_header, ","))
+
+ann_field <- ann_header_vals[grep("^Description=", ann_header_vals)]
+ann_format <- gsub("^Description=", "", ann_field)
+
+cat("Annotation format:", ann_format, "\n")
+
+# Get only first entry for ANN in variant 1
+first_ann_val <- unlist(strsplit(first_ann_vals, ","))[1]
+first_annotation <- unlist(strsplit(first_ann_val, "\\|"))[2]
+
+cat("The annotation field is", first_annotation, "which tells us the variant is intronic.")
+```
+
+# 5.4
+```{r}
+ref_allele <- variants$REF[683]
+alt_allele <- variants$ALT[683]
+
+cat("Reference Allele: ", ref_allele, "\n")
+cat("Alternative Allele: ", alt_allele, "\n")
+
+other_var_info <- as.character(variants$INFO[683])
+
+other_split_info <- strsplit(other_var_info, ";")[[1]]
+
+other_ann <- other_split_info[grep("^ANN=", other_split_info)]
+
+other_ann_vals <- gsub("ANN=", "", other_ann)
+cat(other_ann_vals)
+
+cat(ann_format)
+
+other_ann_val <- unlist(strsplit(other_ann_vals, ","))[1]
+cat(other_ann_val)
+
+cat("It would affect Gene Rps19")
+```
+
+# 5.5
+```{r}
+high_impact_count <- 0
+
+search_tag <- c("HIGH")
+
+for (i in 1:nrow(variants)){
+  
+  var_info <- as.character(variants$INFO[i])
+  
+  search_tag <- c("HIGH")
+  
+  if (any(sapply(search_tag, grepl, var_info))) {
+    high_impact_count <- high_impact_count + 1
+  }
+  
+  # split_info <- strsplit(var_info, ";")[[1]]
+  # 
+  # ann <- split_info[grep("^ANN=", split_info)]
+  # 
+  # ann_vals <- gsub("ANN=", "", ann)
+  # ann_val <- unlist(strsplit(ann_vals, ","))[1]
+  # 
+  # var_type <- unlist(strsplit(ann_val, "\\|"))[2]
+  
+  # if (var_type %in% names(mutation_count)){
+  #   mutation_count[[var_type]] <- mutation_count[[var_type]] + 1
+  # }
+  # else{
+  #   mutation_count[[var_type]] <- 1
+  # }
+}
+
+print(high_impact_count)
+
+```
+
+# 5.6
+```{r}
+cat("")
+```
+
+# 5.7
+```{r}
+num_variants <- nrow(variants)
+num_intronic <- 0
+
+intronic_tags <- c("intron", "intergenic")
+
+for (i in 1:nrow(variants)) {
+  var_info <- as.character(variants$INFO[i])
+  
+  if (any(sapply(intronic_tags, grepl, var_info))) {
+    num_intronic <- num_intronic + 1
+  }
+}
+
+cat("Total number of variants: ", num_variants, "\n")
+cat("Number of intronic variants: ", num_intronic)
+```
+
+# 5.8
+```{r}
+list_genes <- c()
+
+gene_tags <- c("HIGH", "MODERATE")
+
+for (i in 1:nrow(variants)) {
+  var_info <- as.character(variants$INFO[i])
+  
+  split_info <- strsplit(var_info, ";")[[1]]
+
+  ann <- split_info[grep("^ANN=", split_info)]
+
+  ann_vals <- gsub("ANN=", "", ann)
+  ann_val <- unlist(strsplit(ann_vals, ","))[1]
+  
+  if (any(sapply(gene_tags, grepl, ann_val))) {
+    
+    gene_name <- unlist(strsplit(ann_val, "\\|"))[4]
+    
+    if(!(gene_name %in% list_genes)) {
+      list_genes <- c(list_genes, gene_name)
+    }
+  
+  }
+}
+
+print(list_genes)
+
+cat("What is interesting is that ")
+```
+
+# 5.9
+```{r}
+
+```
+
+# 5.10
+```{r}
+
+```
