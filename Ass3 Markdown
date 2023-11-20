@@ -18,34 +18,57 @@ and form secondary structures, which further impedes the progression of DNA poly
 ## Question 2
 
 ```{r}
+
 [Daniel's image]
+
 ```
 
 ## Question 3
 
-```{r}
-[alex]
+```{r Q3., results = 'hide'}
+
+# Q3.1.
+
+read.csv("single_cell_RNA_seq_bam.sam", nrows=73, sep="\t", header=FALSE, fill=TRUE)
+
+# The SN tag indicates the reference sequence name and the LN tag indicates the 
+# reference sequence length.
+  
+# Q3.2.
+
+data <- read.csv("single_cell_RNA_seq_bam.sam", sep="\t", header=FALSE, fill=TRUE)
+X.length <- data$V3[data$V2 == "SN:X"]
+
+# The length of the X chromosome is 171031299 bp.
+
 ```
 
 ## Question 4
 
 ```{r}
+
 #q4.1
+
 sam <- read.csv("single_cell_RNA_seq_bam.sam",
                 sep="\t", header=FALSE,
 comment.char="@", col.names = paste0("V",seq_len(30)), fill=TRUE)
 sam <- sam[paste0("V",seq_len(11))]
 nrow(sam)
 
+# There are 146346 reads.
+
 #q4.2
+
 row_10 <- sam[10,]
-#want row 3 for chromosame label (Rname)
-#V11 is the segment sequence
+# You should look at column 3 (V3) to find the chromosome to which the read was aligned.
+# V11 corresponds to the data field QUAL which is the ASCII of Phred-scaled base QUALity+33.
 
 #q4.3
+
 X <-  subset(sam, V3 == "X")
 nrow(X)
-#5999 reads are from chormosome X
+
+# 5999 reads are from chromosome X
 
 
 #q4.4
@@ -57,7 +80,7 @@ nrow(X)
 [SJ code here]
 
 #q4.6
-#number V4 is the mapping position
+# Column V4 is the leftmost mapping position
   
 #q4.7
 Hspa8 <- subset(sam, V4 >= 40801273 & V4 <= 40805199)
