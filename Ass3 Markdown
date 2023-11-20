@@ -108,7 +108,16 @@ var1ANN <- var1Info[grep("ANN=", var1Info)]
 
 #q5.4
 
-[anyone]
+var683ref <- variants$REF[683]
+var683alt <- variants$ALT[683]
+var683Info <- strsplit(as.character(variants$INFO[683]), ";")[[1]]
+var683ANN <- var683Info[grep("ANN=", var683Info)]
+var683ANN
+
+var683annotes <- strsplit(var683ANN, ",")[[1]]
+var683annotes <- gsub("ANN=", "", var683annotes)
+unlist(var683annotes[1])
+#affects gene Rps19
 
 #q5.5
 HIGHvar <- variants[grep("HIGH", variants$INFO), ]
