@@ -22,12 +22,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ## Question 3
 
 ```{r}
-read.csv("single_cell_RNA_seq_bam.sam", nrows=73, sep="\t",
-         header=FALSE, fill=TRUE)
-#SN = seq name , LN = length
-#length of x = 171031299
-file <- read.csv("single_cell_RNA_seq_bam.sam",
-                 sep="\t", header=FALSE, fill=TRUE)
+[alex]
 ```
 
 ## Question 4
@@ -153,10 +148,9 @@ Contributions:
 Collabrative:
 
 Alex:
-1 
+1,3,5.1,5.2,5.3
 Daniel: 
 2,
-3,
 4.1,4.2,4.3,4.6,4.7,4.8,4.9
 5.10
 SJ:
