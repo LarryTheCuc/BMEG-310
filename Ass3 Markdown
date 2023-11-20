@@ -11,12 +11,12 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Question 1
 
-[put here]
+[Alex]
 
 ## Question 2
 
 ```{r}
-#same as yours
+[Daniel's image]
 ```
 
 ## Question 3
@@ -52,22 +52,19 @@ nrow(X)
 
 
 #q4.4
-ascii2Qual <- function(string){
-  return(utf8ToInt(string) - 33)
-}
 
-bpQual <- sapply(X$V11, ascii2Qual)
-mean(bpQual)
+[SJ]
 
-#?????
-#boxplot(sam$V5, ylim = c(0,500))
-#head(file)
+#q4.5
+
+[SJ code here]
 
 #q4.6
 #number V4 is the mapping position
   
 #q4.7
 Hspa8 <- subset(sam, V4 >= 40801273 & V4 <= 40805199)
+nrow(Hspa8)
 #134 reads
 
 #q4.8
@@ -94,78 +91,45 @@ variants <- read.csv("RNA_seq_annotated_variants.vcf", skip=length(header),
                      header=TRUE, sep="\t")
 #reference genome is column 4; REF. The alternative allele is column 5; ALT 
 var1ref <- variants$REF[1]
+var1ref
 var1alt <- variants$ALT[1]
+var1alt
 
 #q5.2
 var1Info <- strsplit(as.character(variants$INFO[1]), ";")[[1]]
 var1ANN <- var1Info[grep("ANN=", var1Info)]
 
 #q5.3
-var1annotes <- strsplit(var1ANN, ",")[[1]]
-var1annotes <- gsub("ANN=", "", var1annotes)
-var1annotes[1]
 
-#first variant is an intron variant with
-#a modifying impact on the gene Sulf1 (gene ID:ENSMUSG00000016918)
-#the next feature is a transcript (transcript ID:ENSMUST00000088585.9)
-#the biotype is protein coding with a rank 2/21
-#c.-133+17418G>A (variant in HGVS notation)
+[anyone]
 
 #q5.4
-var683ref <- variants$REF[683]
-var683alt <- variants$ALT[683]
-var683Info <- strsplit(as.character(variants$INFO[683]), ";")[[1]]
-var683ANN <- var683Info[grep("ANN=", var683Info)]
-var683ANN
 
-var683annotes <- strsplit(var683ANN, ",")[[1]]
-var683annotes <- gsub("ANN=", "", var683annotes)
-var683annotes[1]
-#affects gene Rps19
+[anyone]
 
 #q5.5
 HIGHvar <- variants[grep("HIGH", variants$INFO), ]
 nrow(HIGHvar)
-#4
+#4 rows
 
 #q5.6
 #frameshifts occur from a deletion or insertion that changes the reading frame 
 #typically causing a premature stop. In comparison a missense is just a single 
-#amino acid being changed. Frame shift have a larger influence on the protein as 
+#amino acid being changed. Frame shifts have a larger influence on the protein as 
 #the entire amino acid chain is interpreted as opposed to a single amino-acid 
 #in the chain being changed. 
 
 #q.5.7
-IntronTargets <- c("intron", "intergenic") 
-BoolInt <- grepl(paste(IntronTargets,collapse = "|"), variants$INFO)
-numInt <- sum(BoolInt, na.rm=TRUE)
-numInt
-# there are 686 intron/intergenic coding regions
-numInt / length(BoolInt)
-#82% are introns
+
+[Sj or Alex]
 
 #q5.8
-ImpactTargets <- c("HIGH", "MODERATE")
-Impactfulvar <- variants[grep(paste(ImpactTargets,collapse = "|"), variants$INFO), ]
-ProteinImpactVar <- Impactfulvar[grep("protein_coding", Impactfulvar$INFO), ]
-#all impactful variants are protein coding
 
-ProtImpInfo <- strsplit(as.character(ProteinImpactVar$INFO),";")
-ProtImpVar <- ProtImpInfo[grep("ANN=", ProtImpInfo)]
-ProtImpVar <- gsub("ANN=", "", ProtImpVar)
+[SJ or Daniel code]
 
-ImpactedGenes <- c()
+#q5.9
 
-for (i in 1:length(temp)) {
- TEMPvarInfo <- unlist(temp[i]) 
- LISTvarInfo <- unlist(strsplit(TEMPvarInfo, "\\|"))
- TEMPgenename <- LISTvarInfo[4]
- if(!(TEMPgenename %in% ImpactedGenes)){
-   ImpactedGenes <- c(ImpactedGenes, TEMPgenename)
- }
-}
-
-ImpactedGenes
+[alex words here]
 
 #q5.10
 sampleFormat <- strsplit(variants$FORMAT, ":",fixed=TRUE)
