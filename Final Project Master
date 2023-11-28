@@ -1,1 +1,29 @@
+#importing files and filtering for the "universal" data points
+
+patient <-  read.csv("C:/Users/Daniel/Desktop/School/Year 3/BMEG 310/Final Project/TCGA-LIHC/data_clinical_patient.txt", sep = "\t")
+mutations <-  read.csv("C:/Users/Daniel/Desktop/School/Year 3/BMEG 310/Final Project/TCGA-LIHC/data_mutations.txt", sep = "\t")
+RNAseq <-  read.csv("C:/Users/Daniel/Desktop/School/Year 3/BMEG 310/Final Project/TCGA-LIHC/RNAseq_LIHC.csv")
+
+pat_pop <- patient$X.Patient.Identifier
+unique_pat <- length(unique(pat_pop)) - 4
+
+mut_pop <- mutations$Tumor_Sample_Barcode
+mut_pop <- substr(mut_pop, 1, 12)
+unique_mut_pat <- length(unique(mut_pop))
+
+RNA_pop <- colnames(RNAseq)
+RNA_pop <- gsub("\\.","-",RNA_pop)
+RNA_pop <- substr(RNA_pop, 1, 12)
+unique_RNA_pop <- length(unique(RNA_pop)) -1
+unique_RNA_pop
+
+first_inter <- intersect(pat_pop,mut_pop)
+true_inter <- intersect(first_inter, RNA_pop)
+
+#extracts only the parts from clinical data that are present in all datasets, this is our target for PCA
+complete_clin <- patient[patient$X.Patient.Identifier %in% true_inter, ]
+
+#starting the PCA analysis of the clinical data
+
+clincomp.pca <- prcomp(complete_clin[,5:32], center = TRUE,scale. = TRUE)
 
