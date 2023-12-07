@@ -1,5 +1,3 @@
-#importing files and filtering for the "universal" data points
-
 patient <-  read.csv("C:/Users/Daniel/Desktop/School/Year 3/BMEG 310/Final Project/TCGA-LIHC/data_clinical_patient.txt", sep = "\t")
 mutations <-  read.csv("C:/Users/Daniel/Desktop/School/Year 3/BMEG 310/Final Project/TCGA-LIHC/data_mutations.txt", sep = "\t")
 RNAseq <-  read.csv("C:/Users/Daniel/Desktop/School/Year 3/BMEG 310/Final Project/TCGA-LIHC/RNAseq_LIHC.csv")
@@ -23,7 +21,37 @@ true_inter <- intersect(first_inter, RNA_pop)
 #extracts only the parts from clinical data that are present in all datasets, this is our target for PCA
 complete_clin <- patient[patient$X.Patient.Identifier %in% true_inter, ]
 
-#starting the PCA analysis of the clinical data
+#columns with numbers
+Clin_numeric_cols <- c(5,10,28,31,33,35,37)
+complete_clin.num <- complete_clin
 
-clincomp.pca <- prcomp(complete_clin[,5:32], center = TRUE,scale. = TRUE)
+#change all number values from charcetr to numeric
+for (col in Clin_numeric_cols) {
+  complete_clin.num[,col] <- sapply(complete_clin[,col], as.numeric)
+}
+
+clin_full <- complete_clin.num[complete.cases(complete_clin.num), ]
+clin.pca <- prcomp((clin_full[,Clin_numeric_cols]), center = TRUE,scale. = TRUE)
+summary(clincomp.pca)
+
+#PC 4 takes us to 99% of the data so we go with that
+
+#installing the graph tools
+install.packages("devtools")
+library(devtools)
+install.packages("remotes")
+remotes::install_github("vqv/ggbiplot")
+library(ggbiplot)
+
+#plotting the first 2 relevant PC's (PC3 and PC4)
+ggbiplot(clin.pca, choices=c(3,4))
+ggbiplot(clin.pca, labels=row.names(clin_full))
+
+ggbiplot(clin.pca, ellipse = TRUE, labels=rownames(clin_full), groups=clin_full$Sex)
+ggbiplot(clin.pca, ellipse = TRUE, labels=rownames(clin_full), groups=clin_full$Neoplasm.Disease.Stage.American.Joint.Committee.on.Cancer.Code)
+ggbiplot(clin.pca, ellipse = TRUE, labels=rownames(clin_full), groups=clin_full$Person.Neoplasm.Cancer.Status)
+
+ggbiplot(clin.pca, ellipse = TRUE, labels=rownames(clin_full), groups=clin_full$Overall.Survival.Status)
+ggbiplot(clin.pca, ellipse = TRUE, labels=rownames(clin_full), groups=clin_full$Disease.specific.Survival.status)
+ggbiplot(clin.pca, ellipse = TRUE, labels=rownames(clin_full), groups=clin_full$Disease.Free.Status)
 
