@@ -1,4 +1,3 @@
-BMEG-310
 Compilation of R code used for machine learning and data analysis
 
 THIS IS NOT AN ACTIVE GITHUB, rather an archive of the various lab assignments and a final project aimed at applying machine learning algorithms to medical contexts.
